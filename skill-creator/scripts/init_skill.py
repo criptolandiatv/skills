@@ -106,18 +106,102 @@ EXAMPLE_SCRIPT = '''#!/usr/bin/env python3
 """
 Example helper script for {skill_name}
 
-This is a placeholder script that can be executed directly.
+This is a working example script demonstrating common patterns.
 Replace with actual implementation or delete if not needed.
 
 Example real scripts from other skills:
 - pdf/scripts/fill_fillable_fields.py - Fills PDF form fields
 - pdf/scripts/convert_pdf_to_images.py - Converts PDF pages to images
+
+Usage:
+    python example.py <input_file> [--output <output_file>] [--verbose]
 """
 
+import argparse
+import sys
+from pathlib import Path
+
+
+def process_file(input_path: Path, output_path: Path, verbose: bool = False) -> bool:
+    """
+    Process an input file and write results to output.
+
+    Args:
+        input_path: Path to the input file
+        output_path: Path to write the output
+        verbose: Whether to print detailed progress
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        if verbose:
+            print(f"Reading from: {{input_path}}")
+
+        # Read input file
+        content = input_path.read_text()
+
+        if verbose:
+            print(f"Processing {{len(content)}} characters...")
+
+        # Example processing: convert to uppercase (replace with actual logic)
+        processed = content.upper()
+
+        # Write output
+        output_path.write_text(processed)
+
+        if verbose:
+            print(f"Written to: {{output_path}}")
+
+        return True
+
+    except FileNotFoundError:
+        print(f"Error: Input file not found: {{input_path}}", file=sys.stderr)
+        return False
+    except PermissionError:
+        print(f"Error: Permission denied accessing files", file=sys.stderr)
+        return False
+    except Exception as e:
+        print(f"Error processing file: {{e}}", file=sys.stderr)
+        return False
+
+
 def main():
-    print("This is an example script for {skill_name}")
-    # TODO: Add actual script logic here
-    # This could be data processing, file conversion, API calls, etc.
+    parser = argparse.ArgumentParser(
+        description="Example helper script for {skill_name}",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "input_file",
+        type=Path,
+        help="Path to the input file to process",
+    )
+    parser.add_argument(
+        "--output", "-o",
+        type=Path,
+        default=None,
+        help="Output file path (default: input_file.out)",
+    )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Print detailed progress information",
+    )
+
+    args = parser.parse_args()
+
+    # Set default output path if not specified
+    output_path = args.output or args.input_file.with_suffix(".out")
+
+    # Process the file
+    success = process_file(args.input_file, output_path, args.verbose)
+
+    if success:
+        print(f"Successfully processed: {{args.input_file}} -> {{output_path}}")
+        sys.exit(0)
+    else:
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
